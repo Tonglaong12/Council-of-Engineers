@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจำลองการสอบ กว. ภาคีวิศวกรเคมี (หมวดวิชาเฉพาะ) - สภาวิศวกร</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f1f5f9;
+            user-select: none;
+        }
+        .cbt-header {
+            background: linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%);
+        }
+        .question-grid-btn {
+            transition: all 0.15s ease-in-out;
+        }
+        .question-grid-btn:hover {
+            transform: translateY(-2px);
+        }
+        .formula-box {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            background-color: #f8fafc;
+            border-left: 4px solid #3b82f6;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800">
+
+    <!-- Top Official Banner / CBT Header -->
+    <header class="cbt-header text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="confirmReturnHome()">
+                <div class="w-11 h-11 rounded-full bg-amber-500 flex items-center justify-center text-slate-900 font-bold text-xl shadow-inner border-2 border-white">
+                    <i class="fa-solid fa-flask-vial"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-amber-400 text-slate-900 text-xs font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">CBT Simulator</span>
+                        <h1 class="text-lg md:text-xl font-bold tracking-wide">ระบบทดสอบความรู้ผู้ขอรับใบอนุญาตประกอบวิชาชีพวิศวกรรมควบคุม</h1>
+                    </div>
+                    <p class="text-xs text-blue-200">ระดับภาคีวิศวกร สาขาวิศวกรรมเคมี (หมวดวิชาเฉพาะ) | เกณฑ์ผ่าน 60%</p>
+                </div>
+            </div>
+
+            <!-- Active Exam Status Info (Hidden on Home Screen) -->
+            <div id="examHeaderInfo" class="hidden items-center space-x-4 bg-slate-900/60 px-4 py-2 rounded-xl border border-blue-400/30">
+                <div class="hidden sm:block text-right border-r border-slate-600 pr-4">
+                    <p class="text-xs text-slate-300">ผู้เข้าสอบ: <span class="text-white font-semibold">ว่าที่ภาคีวิศวกรเคมี</span></p>
+                    <p id="headerModeBadge" class="text-xs text-amber-400 font-medium">โหมดจำลองสอบจริง</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fa-regular fa-clock text-amber-400 text-xl animate-pulse"></i>
+                    <div>
+                        <p class="text-[10px] text-slate-300 uppercase leading-none">เวลาที่เหลือ</p>
+                        <p id="timerDisplay" class="text-xl font-mono font-bold text-white tracking-wider">60:00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6">
+
+        <!-- ==================== 1. HOME / DASHBOARD VIEW ==================== -->
+        <section id="homeView" class="space-y-6">
+            <!-- Hero Welcome Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-5 pointer-events-none">
+                    <i class="fa-solid fa-industry text-[220px]"></i>
+                </div>
+                <div class="max-w-3xl space-y-3 relative z-10">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                        <i class="fa-solid fa-circle-check"></i> อ้างอิงโครงสร้างข้อสอบสภาวิศวกร (COE)
+                    </span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-900">คลังข้อสอบเก่าพร้อมเฉลยละเอียด กว. สาขาวิศวกรรมเคมี</h2>
+                    <p class="text-slate-600 leading-relaxed text-sm md:text-base">
+                        ฝึกซ้อมทำข้อสอบเสมือนจริงด้วยระบบ Computer-Based Testing (CBT) ครอบคลุม 4 รายวิชาเฉพาะทางวิศวกรรมเคมี พร้อมตัวช่วยคำนวณ สูตร และการวิเคราะห์ผลคะแนนรายวิชา
+                    </p>
+                </div>
+
+                <!-- Quick Stats Bar -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100">
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500">หมวดวิชาเฉพาะ</p>
+                            <p class="font-bold text-slate-800">4 กลุ่มวิชาหลัก</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-600/10 text-emerald-600 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500">ข้อสอบคัดสรรพร้อมเฉลย</p>
+                            <p class="font-bold text-slate-800"><span id="totalBankCount">20</span> ข้อ (ปรนัย 4 ตัวเลือก)</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-600/10 text-amber-600 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-award"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500">เกณฑ์ผ่านการทดสอบ</p>
+                            <p class="font-bold text-slate-800">ไม่น้อยกว่า 60%</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-purple-600/10 text-purple-600 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500">เครื่องมือช่วยสอบ</p>
+                            <p class="font-bold text-slate-800">ตารางค่าคงที่ & เครื่องคิดเลข</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration Grid: Mode & Subject Selection -->
+            <div class="grid md:grid-cols-12 gap-6">
+                <!-- Left Column: Mode Selection (5 cols) -->
+                <div class="md:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">1</span>
+                            <h3 class="text-lg font-bold text-slate-900">เลือกรูปแบบการทำข้อสอบ</h3>
+                        </div>
+
+                        <div class="space-y-3 pt-2">
+                            <!-- Exam Mode Option -->
+                            <label onclick="selectMode('exam')" id="modeCard_exam" class="block cursor-pointer rounded-xl border-2 border-blue-600 bg-blue-50/40 p-4 transition-all">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg">
+                                            <i class="fa-solid fa-desktop"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900">โหมดจำลองสอบจริง (CBT Simulation)</h4>
+                                            <span class="text-xs text-blue-700 font-medium">จับเวลาจริง • ทราบผลและเฉลยเมื่อส่งข้อสอบ</span>
+                                        </div>
+                                    </div>
+                                    <input type="radio" name="examMode" value="exam" checked class="mt-1 w-4 h-4 text-blue-600">
+                                </div>
+                                <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                                    จำลองบรรยากาศห้องสอบสภาวิศวกร มีระบบนับเวลาถอยหลัง สามารถติดธง (Flag) ข้อที่ไม่มั่นใจเพื่อกลับมาทบทวน และประเมินผลผ่าน/ไม่ผ่านที่ 60%
+                                </p>
+                            </label>
+
+                            <!-- Practice Mode Option -->
+                            <label onclick="selectMode('practice')" id="modeCard_practice" class="block cursor-pointer rounded-xl border-2 border-slate-200 hover:border-slate-300 p-4 transition-all">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg">
+                                            <i class="fa-solid fa-lightbulb"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900">โหมดฝึกทำข้อสอบ (Practice & Learn)</h4>
+                                            <span class="text-xs text-emerald-700 font-medium">ไม่จำกัดเวลา • ดูเฉลยและวิธีทำได้ทันทีรายข้อ</span>
+                                        </div>
+                                    </div>
+                                    <input type="radio" name="examMode" value="practice" class="mt-1 w-4 h-4 text-emerald-600">
+                                </div>
+                                <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+                                    เหมาะสำหรับทบทวนความรู้และฝึกคำนวณ เมื่อเลือกคำตอบแล้วสามารถกดดูเฉลยละเอียด สูตรที่ใช้ และคำอธิบายทีละขั้นตอนได้ทันที
+                                </p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-100">
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-3">
+                            <span>ต้องการสุ่มลำดับข้อสอบหรือไม่?</span>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="shuffleToggle" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all relative peer-checked:bg-blue-600"></div>
+                                <span class="ml-2 font-medium text-slate-700">สุ่มข้อสอบ</span>
+                            </label>
+                        </div>
+                        <button onclick="startExam()" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-play"></i>
+                            <span>เริ่มทำข้อสอบทันที</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Subject Filter (7 cols) -->
+                <div class="md:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">2</span>
+                            <h3 class="text-lg font-bold text-slate-900">เลือกหมวดวิชาเฉพาะที่ต้องการสอบ</h3>
+                        </div>
+                        <span id="selectedSubjectCountBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">เลือก: รวมทุกวิชา (20 ข้อ)</span>
+                    </div>
+
+                    <div class="grid sm:grid-cols-2 gap-3.5">
+                        <!-- All Subjects Card -->
+                        <div onclick="selectCategory('ALL')" id="catCard_ALL" class="sm:col-span-2 cursor-pointer rounded-xl border-2 border-blue-600 bg-blue-50/40 p-4 transition-all flex items-center justify-between">
+                            <div class="flex items-center space-x-3.5">
+                                <div class="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl shadow-sm">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900">รวมทุกวิชาเฉพาะวิศวกรรมเคมี (เสมือนสอบจริง)</h4>
+                                    <p class="text-xs text-slate-600">ครอบคลุมทั้ง 4 วิชาหลักตามโครงสร้างสภาวิศวกร • จำนวน 20 ข้อ (60 นาที)</p>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-circle-check text-blue-600 text-xl" id="catIcon_ALL"></i>
+                        </div>
+
+                        <!-- Subject 1: Thermodynamics -->
+                        <div onclick="selectCategory('THERMO')" id="catCard_THERMO" class="cursor-pointer rounded-xl border-2 border-slate-200 hover:border-slate-300 p-4 transition-all flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-rose-100 text-rose-700">วิชาที่ 1 • 5 ข้อ</span>
+                                    <i class="fa-regular fa-circle text-slate-400 text-lg" id="catIcon_THERMO"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm md:text-base">Chemical Engineering Thermodynamics</h4>
+                                <p class="text-xs text-slate-500 mt-1">อุณหพลศาสตร์วิศวกรรมเคมี</p>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-3 pt-2 border-t border-slate-100">
+                                กฎข้อที่ 1 & 2, วัฏจักร Carnot/Rankine, สมบัติของไหล, Fugacity, สมดุลวัฏภาค (VLE & Raoult's Law), สมดุลเคมี
+                            </p>
+                        </div>
+
+                        <!-- Subject 2: Unit Ops & Transport -->
+                        <div onclick="selectCategory('UNITOPS')" id="catCard_UNITOPS" class="cursor-pointer rounded-xl border-2 border-slate-200 hover:border-slate-300 p-4 transition-all flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-sky-100 text-sky-700">วิชาที่ 2 • 5 ข้อ</span>
+                                    <i class="fa-regular fa-circle text-slate-400 text-lg" id="catIcon_UNITOPS"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm md:text-base">Transport Phenomena & Unit Operations</h4>
+                                <p class="text-xs text-slate-500 mt-1">การถ่ายโอนโมเมนตัม ความร้อน มวล และปฏิบัติการหน่วย</p>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-3 pt-2 border-t border-slate-100">
+                                Reynolds, สมการ Bernoulli, ปั๊ม, เครื่องแลกเปลี่ยนความร้อน (LMTD), หอกลั่น (McCabe-Thiele), การดูดซึม
+                            </p>
+                        </div>
+
+                        <!-- Subject 3: Kinetics & Reactor Design -->
+                        <div onclick="selectCategory('KINETICS')" id="catCard_KINETICS" class="cursor-pointer rounded-xl border-2 border-slate-200 hover:border-slate-300 p-4 transition-all flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-amber-100 text-amber-800">วิชาที่ 3 • 5 ข้อ</span>
+                                    <i class="fa-regular fa-circle text-slate-400 text-lg" id="catIcon_KINETICS"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm md:text-base">Kinetics & Chemical Reactor Design</h4>
+                                <p class="text-xs text-slate-500 mt-1">จลนพลศาสตร์เคมีและการออกแบบเครื่องปฏิกรณ์</p>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-3 pt-2 border-t border-slate-100">
+                                อัตราการเกิดปฏิกิริยา, ครึ่งชีวิต, สมการ Arrhenius, การออกแบบ Batch, CSTR, PFR, การต่ออนุกรม/ขนาน, Selectivity
+                            </p>
+                        </div>
+
+                        <!-- Subject 4: Process Control, Safety & Plant Design -->
+                        <div onclick="selectCategory('CONTROL')" id="catCard_CONTROL" class="cursor-pointer rounded-xl border-2 border-slate-200 hover:border-slate-300 p-4 transition-all flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-emerald-100 text-emerald-800">วิชาที่ 4 • 5 ข้อ</span>
+                                    <i class="fa-regular fa-circle text-slate-400 text-lg" id="catIcon_CONTROL"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm md:text-base">Process Control, Safety & Plant Design</h4>
+                                <p class="text-xs text-slate-500 mt-1">การควบคุมกระบวนการ ความปลอดภัย และการออกแบบโรงงาน</p>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-3 pt-2 border-t border-slate-100">
+                                First-order system, PID Controller, วาล์วควบคุม (Fail-safe), HAZOP, LEL/UEL, มูลค่าเงินและการประเมินโครงการ
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 2. CBT EXAM INTERFACE VIEW ==================== -->
+        <section id="examView" class="hidden">
+            <div class="grid lg:grid-cols-12 gap-6 items-start">
+
+                <!-- Left/Main Area: Question Display & Controls (8 cols) -->
+                <div class="lg:col-span-8 space-y-4">
+                    <!-- Question Top Bar -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center space-x-3">
+                            <span id="qNumberBadge" class="px-3.5 py-1.5 rounded-xl bg-blue-700 text-white font-bold text-sm shadow-sm">
+                                ข้อที่ 1 / 20
+                            </span>
+                            <div>
+                                <span id="qSubjectBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700">
+                                    Chemical Engineering Thermodynamics
+                                </span>
+                                <p id="qCodeText" class="text-[11px] text-slate-400 mt-0.5">รหัสอ้างอิงข้อสอบ: COE-CHE-TH-101</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <button onclick="toggleFormulaModal()" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center space-x-1.5 transition">
+                                <i class="fa-solid fa-square-root-variable text-blue-600"></i>
+                                <span>ค่าคงที่/สูตร</span>
+                            </button>
+                            <button onclick="toggleCalculatorModal()" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center space-x-1.5 transition">
+                                <i class="fa-solid fa-calculator text-emerald-600"></i>
+                                <span>เครื่องคิดเลข</span>
+                            </button>
+                            <button onclick="toggleFlagCurrent()" id="flagBtn" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 text-slate-600 text-xs font-semibold flex items-center space-x-1.5 transition">
+                                <i class="fa-regular fa-flag" id="flagIcon"></i>
+                                <span id="flagText">ติดธงทบทวน</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Question Content Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 min-h-[380px] flex flex-col justify-between">
+                        <div class="space-y-6">
+                            <!-- Question Text -->
+                            <div id="questionText" class="text-base md:text-lg font-medium text-slate-900 leading-relaxed space-y-2">
+                                <!-- Injected by JS -->
+                            </div>
+
+                            <!-- Choices Container -->
+                            <div id="choicesContainer" class="space-y-3 pt-2">
+                                <!-- Injected by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Practice Mode Instant Solution Box -->
+                        <div id="instantSolutionBox" class="hidden mt-6 pt-6 border-t border-slate-200">
+                            <div id="instantFeedbackBanner" class="p-4 rounded-xl mb-4 flex items-center justify-between">
+                                <!-- Correct / Incorrect status -->
+                            </div>
+                            <div class="formula-box p-4 rounded-xl space-y-2 text-sm text-slate-800">
+                                <h4 class="font-bold text-blue-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i>
+                                    <span>เฉลยละเอียดและแนวคิดการคำนวณ:</span>
+                                </h4>
+                                <div id="instantExplanationText" class="leading-relaxed space-y-1.5 font-sans"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Navigation Bar -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+                        <button onclick="prevQuestion()" id="prevBtn" class="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-sm flex items-center space-x-2 disabled:opacity-40 disabled:pointer-events-none transition">
+                            <i class="fa-solid fa-chevron-left"></i>
+                            <span>ข้อก่อนหน้า</span>
+                        </button>
+
+                        <div id="practiceCheckBtnWrap" class="hidden">
+                            <button onclick="revealPracticeAnswer()" id="checkAnswerBtn" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-sm flex items-center space-x-2 shadow-sm transition">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>ดูเฉลยข้อนี้</span>
+                            </button>
+                        </div>
+
+                        <button onclick="nextQuestion()" id="nextBtn" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center space-x-2 shadow-sm transition">
+                            <span>ข้อถัดไป</span>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar: Question Palette & Summary (4 cols) -->
+                <div class="lg:col-span-4 space-y-4 sticky top-20">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                            <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                                <i class="fa-solid fa-table-cells text-blue-600"></i>
+                                <span>ผังข้อสอบ (Question Palette)</span>
+                            </h3>
+                            <span id="answeredCounterText" class="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full">
+                                ตอบแล้ว 0/20
+                            </span>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3.5 h-3.5 rounded bg-blue-600 inline-block"></span>
+                                <span>ตอบแล้ว (<span id="legendAnswered">0</span>)</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3.5 h-3.5 rounded bg-white border border-slate-300 inline-block"></span>
+                                <span>ยังไม่ตอบ (<span id="legendUnanswered">20</span>)</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3.5 h-3.5 rounded bg-amber-400 inline-block"></span>
+                                <span>ติดธงทบทวน (<span id="legendFlagged">0</span>)</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3.5 h-3.5 rounded ring-2 ring-blue-600 bg-blue-50 inline-block"></span>
+                                <span>ข้อปัจจุบัน</span>
+                            </div>
+                        </div>
+
+                        <!-- Number Buttons Grid -->
+                        <div id="paletteGrid" class="grid grid-cols-5 gap-2.5 max-h-64 overflow-y-auto p-1">
+                            <!-- Injected by JS -->
+                        </div>
+
+                        <!-- Submit Exam Action -->
+                        <div class="mt-6 pt-4 border-t border-slate-100 space-y-2">
+                            <button onclick="openSubmitConfirmation()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>ส่งกระดาษคำตอบและดูผลคะแนน</span>
+                            </button>
+                            <button onclick="confirmReturnHome()" class="w-full py-2 px-4 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 text-xs font-medium transition">
+                                ยกเลิกและกลับหน้าหลัก
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== 3. RESULTS & DETAILED REVIEW VIEW ==================== -->
+        <section id="resultView" class="hidden space-y-6">
+            <!-- Top Score Summary Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                <div class="grid md:grid-cols-12 gap-6 items-center">
+                    <div class="md:col-span-7 space-y-3">
+                        <div id="passFailBadge" class="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full text-sm font-bold">
+                            <!-- Injected by JS -->
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-900" id="resultHeadline">สรุปผลการทดสอบวัดความรู้ กว. วิศวกรรมเคมี</h2>
+                        <p class="text-slate-600 text-sm" id="resultSubtext">
+                            เกณฑ์การผ่านตามระเบียบสภาวิศวกรคือต้องได้คะแนนไม่น้อยกว่าร้อยละ 60
+                        </p>
+
+                        <div class="grid grid-cols-3 gap-3 pt-3">
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                                <p class="text-xs text-slate-500">คะแนนที่ได้</p>
+                                <p class="text-xl md:text-2xl font-bold text-slate-900" id="scoreFractionText">0 / 20</p>
+                            </div>
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                                <p class="text-xs text-slate-500">คิดเป็นร้อยละ</p>
+                                <p class="text-xl md:text-2xl font-bold text-blue-600" id="scorePercentText">0%</p>
+                            </div>
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                                <p class="text-xs text-slate-500">เวลาที่ใช้ไป</p>
+                                <p class="text-xl md:text-2xl font-bold text-slate-800" id="timeSpentText">00:00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subject Breakdown Progress Bars -->
+                    <div class="md:col-span-5 bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-3">
+                        <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-blue-600"></i>
+                            <span>วิเคราะห์คะแนนรายหมวดวิชาเฉพาะ</span>
+                        </h3>
+                        <div id="subjectBreakdownList" class="space-y-3 text-xs">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-slate-100 flex flex-wrap gap-3 justify-between items-center">
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="filterReview('ALL')" id="revFilter_ALL" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white">ทั้งหมด</button>
+                        <button onclick="filterReview('WRONG')" id="revFilter_WRONG" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-700">เฉพาะข้อที่ผิด / ไม่ได้ตอบ</button>
+                        <button onclick="filterReview('CORRECT')" id="revFilter_CORRECT" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700">เฉพาะข้อที่ถูก</button>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="retryCurrentExam()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold flex items-center space-x-2 shadow-sm transition">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>สอบชุดนี้อีกครั้ง</span>
+                        </button>
+                        <button onclick="returnHome()" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm font-bold flex items-center space-x-2 transition">
+                            <i class="fa-solid fa-house"></i>
+                            <span>กลับหน้าหลัก</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Solutions & Explanations List -->
+            <div id="reviewSolutionsContainer" class="space-y-4">
+                <!-- Injected by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- 1. Submit Confirmation Modal -->
+    <div id="submitModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-clipboard-question"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">ยืนยันการส่งกระดาษคำตอบ</h3>
+                    <p class="text-xs text-slate-500">กรุณาตรวจสอบสถานะการทำข้อสอบก่อนกดยืนยัน</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-600">จำนวนข้อสอบทั้งหมด:</span>
+                    <span class="font-bold text-slate-900" id="modalTotalQ">20 ข้อ</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">ตอบแล้ว:</span>
+                    <span class="font-bold text-emerald-600" id="modalAnsweredQ">0 ข้อ</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">ยังไม่ได้ตอบ:</span>
+                    <span class="font-bold text-rose-600" id="modalUnansweredQ">20 ข้อ</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">ติดธงทบทวน:</span>
+                    <span class="font-bold text-amber-600" id="modalFlaggedQ">0 ข้อ</span>
+                </div>
+            </div>
+
+            <div class="flex space-x-3 pt-2">
+                <button onclick="closeSubmitConfirmation()" class="flex-1 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-100">
+                    กลับไปทำต่อ
+                </button>
+                <button onclick="submitExam()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md">
+                    ยืนยันส่งข้อสอบ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Return Home Confirmation Modal -->
+    <div id="homeConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <h3 class="text-lg font-bold text-slate-900">ออกจากห้องสอบปัจจุบัน?</h3>
+            <p class="text-sm text-slate-600">ข้อมูลคำตอบที่คุณทำค้างไว้ในรอบนี้จะถูกยกเลิก คุณต้องการกลับสู่หน้าหลักใช่หรือไม่?</p>
+            <div class="flex space-x-3 pt-2">
+                <button onclick="closeHomeConfirmation()" class="flex-1 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-100">ยกเลิก</button>
+                <button onclick="returnHome()" class="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm">กลับหน้าหลัก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Engineering Constants & Formula Sheet Modal -->
+    <div id="formulaModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200">
+            <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl">
+                <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-book-bookmark text-blue-600"></i>
+                    <span>ตารางค่าคงที่และสมการพื้นฐานวิศวกรรมเคมี</span>
+                </h3>
+                <button onclick="toggleFormulaModal()" class="w-8 h-8 rounded-lg hover:bg-slate-200 flex items-center justify-center text-slate-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto space-y-4 text-xs md:text-sm">
+                <div>
+                    <h4 class="font-bold text-blue-800 mb-1">1. ค่าคงที่สากล (Universal Constants)</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-700">
+                        <li>ค่าคงที่ของแก๊ส (R) = 8.314 J/(mol·K) = 0.08206 L·atm/(mol·K) = 1.987 cal/(mol·K)</li>
+                        <li>ความเร่งเนื่องจากแรงโน้มถ่วง (g) = 9.81 m/s²</li>
+                        <li>ความหนาแน่นของน้ำบริสุทธิ์ (ρ<sub>water</sub>) ≈ 1,000 kg/m³ = 1 g/cm³</li>
+                        <li>ความดันบรรยากาศมาตรฐาน (1 atm) = 101.325 kPa = 1.01325 bar = 760 mmHg</li>
+                        <li>อุณหภูมิสัมบูรณ์ T(K) = T(°C) + 273.15</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-blue-800 mb-1">2. อุณหพลศาสตร์ (Thermodynamics)</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-700">
+                        <li>กฎข้อที่ 1 (ระบบปิด): ΔU = Q + W | (ระบบเปิด Steady-state): ΔH + ΔE<sub>k</sub> + ΔE<sub>p</sub> = Q + W<sub>s</sub></li>
+                        <li>ประสิทธิภาพวัฏจักรคาร์โนต์ (Carnot Efficiency): η<sub>max</sub> = 1 - (T<sub>C</sub> / T<sub>H</sub>)</li>
+                        <li>สมการของอองตวน (Antoine Equation): log P* = A - B / (T + C)</li>
+                        <li>กฎของราอูลต์ (Raoult's Law): y<sub>i</sub> P = x<sub>i</sub> P<sub>i</sub>* และค่าความระเหยสัมพัทธ์ α<sub>AB</sub> = P<sub>A</sub>* / P<sub>B</sub>*</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-blue-800 mb-1">3. กลศาสตร์ของไหล & การถ่ายโอน (Transport & Unit Ops)</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-700">
+                        <li>Reynolds Number ในท่อกลม: Re = (ρ v D) / μ</li>
+                        <li>การถ่ายโอนความร้อน: Q = U A ΔT<sub>lm</sub> โดยที่ ΔT<sub>lm</sub> = (ΔT<sub>1</sub> - ΔT<sub>2</sub>) / ln(ΔT<sub>1</sub> / ΔT<sub>2</sub>)</li>
+                        <li>สมการ McCabe-Thiele (Rectifying section OL): y = [R / (R + 1)] x + [x<sub>D</sub> / (R + 1)]</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-blue-800 mb-1">4. จลนพลศาสตร์และเครื่องปฏิกรณ์ (Kinetics & Reactors)</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-700">
+                        <li>Batch (Constant V): t = C<sub>A0</sub> ∫ dX<sub>A</sub> / (-r<sub>A</sub>)</li>
+                        <li>CSTR: V / F<sub>A0</sub> = τ / C<sub>A0</sub> = X<sub>A</sub> / (-r<sub>A,exit</sub>)</li>
+                        <li>PFR: V / F<sub>A0</sub> = τ / C<sub>A0</sub> = ∫ dX<sub>A</sub> / (-r<sub>A</sub>)</li>
+                        <li>ปฏิกิริยาอันดับ 1: C<sub>A</sub> = C<sub>A0</sub> e<sup>-kt</sup> (Batch/PFR) และ X<sub>A</sub> = kτ / (1 + kτ) (CSTR)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Quick Scientific Calculator Modal -->
+    <div id="calculatorModal" class="fixed inset-0 bg-slate-900/40 z-50 hidden items-center justify-center p-4">
+        <div class="bg-slate-900 text-white rounded-2xl w-72 p-4 shadow-2xl border border-slate-700 space-y-3">
+            <div class="flex justify-between items-center text-xs text-slate-400">
+                <span><i class="fa-solid fa-calculator mr-1 text-emerald-400"></i> เครื่องคิดเลขวิศวกรรม</span>
+                <button onclick="toggleCalculatorModal()" class="hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input id="calcDisplay" type="text" readonly value="0" class="w-full bg-slate-800 text-right text-xl font-mono p-3 rounded-xl border border-slate-700 text-emerald-300 focus:outline-none">
+            <div class="grid grid-cols-4 gap-2 text-sm font-bold">
+                <button onclick="calcInput('C')" class="p-2.5 rounded-lg bg-rose-600 hover:bg-rose-500">C</button>
+                <button onclick="calcInput('(')" class="p-2.5 rounded-lg bg-slate-700 hover:bg-slate-600">(</button>
+                <button onclick="calcInput(')')" class="p-2.5 rounded-lg bg-slate-700 hover:bg-slate-600">)</button>
+                <button onclick="calcFunc('ln')" class="p-2.5 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-xs">ln</button>
+
+                <button onclick="calcInput('7')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">7</button>
+                <button onclick="calcInput('8')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">8</button>
+                <button onclick="calcInput('9')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">9</button>
+                <button onclick="calcInput('/')" class="p-2.5 rounded-lg bg-amber-600 hover:bg-amber-500">÷</button>
+
+                <button onclick="calcInput('4')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">4</button>
+                <button onclick="calcInput('5')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">5</button>
+                <button onclick="calcInput('6')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">6</button>
+                <button onclick="calcInput('*')" class="p-2.5 rounded-lg bg-amber-600 hover:bg-amber-500">×</button>
+
+                <button onclick="calcInput('1')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">1</button>
+                <button onclick="calcInput('2')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">2</button>
+                <button onclick="calcInput('3')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">3</button>
+                <button onclick="calcInput('-')" class="p-2.5 rounded-lg bg-amber-600 hover:bg-amber-500">−</button>
+
+                <button onclick="calcInput('0')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">0</button>
+                <button onclick="calcInput('.')" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700">.</button>
+                <button onclick="calcEvaluate()" class="p-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500">=</button>
+                <button onclick="calcInput('+')" class="p-2.5 rounded-lg bg-amber-600 hover:bg-amber-500">+</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 py-4 mt-8 text-center text-xs text-slate-500">
+        <p>ระบบจำลองการสอบ กว. สาขาวิศวกรรมเคมี (หมวดวิชาเฉพาะ) เพื่อการศึกษาและเตรียมความพร้อมสอบใบอนุญาตประกอบวิชาชีพวิศวกรรมควบคุม</p>
+    </footer>
+
+    <!-- ==================== APPLICATION LOGIC & QUESTION BANK ==================== -->
+    <script>
+        const SUBJECT_NAMES = {
+            THERMO: "Chemical Engineering Thermodynamics (อุณหพลศาสตร์วิศวกรรมเคมี)",
+            UNITOPS: "Transport Phenomena & Unit Operations (การถ่ายโอนและปฏิบัติการหน่วย)",
+            KINETICS: "Kinetics & Reactor Design (จลนพลศาสตร์และการออกแบบเครื่องปฏิกรณ์)",
+            CONTROL: "Process Control, Safety & Plant Design (การควบคุม ความปลอดภัย และการออกแบบโรงงาน)"
+        };
+
+        const QUESTION_BANK = [
+            // ---------------- 1. THERMODYNAMICS (5 Questions) ----------------
+            {
+                id: "COE-CHE-TH-101",
+                category: "THERMO",
+                question: "แก๊สอุดมคติจำนวน 2 โมล ถูกอัดแบบอุณหภูมิคงที่ (Isothermal compression) ที่อุณหภูมิ 300 K จากความดันเริ่มต้น 1 bar ไปเป็น 10 bar อย่างผันกลับได้ (Reversible process) จงคำนวณหาค่าความร้อน (Q) ของกระบวนการนี้ (กำหนดให้ R = 8.314 J/mol·K)",
+                choices: [
+                    "ก. -11.49 kJ (ระบบคายความร้อน)",
+                    "ข. +11.49 kJ (ระบบดูดความร้อน)",
+                    "ค. -4.99 kJ (ระบบคายความร้อน)",
+                    "ง. 0 kJ เนื่องจากอุณหภูมิคงที่"
+                ],
+                correctIndex: 0,
+                explanation: `
+                    <p><strong>หลักการ:</strong> สำหรับแก๊สอุดมคติ เมื่ออุณหภูมิคงที่ (Isothermal, ΔT = 0) พลังงานภายในจะไม่เปลี่ยนแปลง (ΔU = 0)</p>
+                    <p>จากกฎข้อที่ 1 ของอุณหพลศาสตร์: <code>ΔU = Q + W = 0</code> ดังนั้น <code>Q = -W</code></p>
+                    <p>งานของการอัดแก๊สอุดมคติแบบผันกลับได้ที่อุณหภูมิคงที่: <code>W = -nRT ln(V₂/V₁) = nRT ln(P₂/P₁)</code></p>
+                    <p>แทนค่า: <code>W = (2 mol)(8.314 J/mol·K)(300 K) × ln(10 / 1) = +11,486 J ≈ +11.49 kJ</code></p>
+                    <p>ดังนั้น ความร้อนของระบบ <code>Q = -W = -11.49 kJ</code> (เครื่องหมายลบแสดงว่าระบบคายความร้อนออกสู่สิ่งแวดล้อม)</p>
+                `
+            },
+            {
+                id: "COE-CHE-TH-102",
+                category: "THERMO",
+                question: "ของผสมของเหลวสององค์ประกอบ A และ B มีพฤติกรรมเป็นสารละลายอุดมคติ (เป็นไปตามกฎของ Raoult) ที่อุณหภูมิหนึ่ง ความดันไอของสารบริสุทธิ์ P_A* = 120 kPa และ P_B* = 40 kPa หากของเหลวมีเศษส่วนโมลของสาร A (x_A) เท่ากับ 0.5 จงหาเศษส่วนโมลของสาร A ในวัฏภาคไอ (y_A) ที่สภาวะสมดุล",
+                choices: [
+                    "ก. 0.50",
+                    "ข. 0.67",
+                    "ค. 0.75",
+                    "ง. 0.80"
+                ],
+                correctIndex: 2,
+                explanation: `
+                    <p><strong>หลักการ:</strong> กฎของราอูลต์ (Raoult's Law): <code>y_A P = x_A P_A*</code></p>
+                    <p>1) คำนวณความดันรวม (P) ของระบบ: <code>P = x_A P_A* + x_B P_B* = (0.5)(120) + (0.5)(40) = 80 kPa</code></p>
+                    <p>2) คำนวณเศษส่วนโมลในวัฏภาคไอ (y_A): <code>y_A = (0.5 × 120) / 80 = 60 / 80 = 0.75</code></p>
+                `
+            },
+            {
+                id: "COE-CHE-TH-103",
+                category: "THERMO",
+                question: "เครื่องจักรความร้อน (Heat Engine) ทำงานระหว่างแหล่งความร้อนอุณหภูมิสูง 527 °C และแหล่งรับความร้อนอุณหภูมิต่ำ 27 °C ถ้าเครื่องจักรนี้รับความร้อนเข้ามาในอัตรา 1,000 kW กำลังงานกลสูงสุดตามทฤษฎีที่เครื่องจักรนี้สามารถผลิตได้คือเท่าใด?",
+                choices: [
+                    "ก. 375 kW",
+                    "ข. 500 kW",
+                    "ค. 625 kW",
+                    "ง. 948 kW"
+                ],
+                correctIndex: 2,
+                explanation: `
+                    <p><strong>หลักการ:</strong> ประสิทธิภาพสูงสุดตามทฤษฎีคือประสิทธิภาพของวัฏจักรคาร์โนต์ (Carnot Efficiency) โดยต้องใช้อุณหภูมิสัมบูรณ์ (หน่วย Kelvin เสมอ)</p>
+                    <p>1) แปลงหน่วยอุณหภูมิ: <code>T_H = 527 + 273 = 800 K</code> และ <code>T_C = 27 + 273 = 300 K</code></p>
+                    <p>2) คำนวณประสิทธิภาพสูงสุด: <code>η_max = 1 - (300 / 800) = 0.625 (62.5%)</code></p>
+                    <p>3) กำลังงานสูงสุดที่ผลิตได้: <code>W_max = 0.625 × 1,000 kW = 625 kW</code></p>
+                `
+            },
+            {
+                id: "COE-CHE-TH-104",
+                category: "THERMO",
+                question: "ในการไหลของแก๊สจริงผ่านวาล์วลดความดัน (Throttling valve / Joule-Thomson expansion) ซึ่งหุ้มฉนวนอย่างดีและไม่มีชิ้นส่วนที่เคลื่อนที่ สมบัติทางอุณหพลศาสตร์ใดของของไหลที่หน้าวาล์วและหลังวาล์วมีค่าเท่ากันเสมอ?",
+                choices: [
+                    "ก. พลังงานภายในจำเพาะ (Specific Internal Energy, U)",
+                    "ข. เอนทาลปีจำเพาะ (Specific Enthalpy, H)",
+                    "ค. เอนโทรปีจำเพาะ (Specific Entropy, S)",
+                    "ง. พลังงานอิสระกิบส์จำเพาะ (Specific Gibbs Free Energy, G)"
+                ],
+                correctIndex: 1,
+                explanation: `
+                    <p><strong>หลักการ:</strong> สมการสมดุลพลังงานสำหรับระบบเปิดที่สภาวะคงตัว: <code>ΔH + ΔE_k + ΔE_p = Q + W_s</code></p>
+                    <p>สำหรับวาล์วลดความดัน หุ้มฉนวน (Q = 0), ไม่มีงานเพลา (W_s = 0) และพลังงานจลน์/ศักย์เปลี่ยนแปลงน้อยมาก</p>
+                    <p>ดังนั้น <code>ΔH = 0</code> หรือ <code>H₁ = H₂</code> (เป็นกระบวนการ Isenthalpic เสมอ)</p>
+                `
+            },
+            {
+                id: "COE-CHE-TH-105",
+                category: "THERMO",
+                question: "ปฏิกิริยาเคมีหนึ่งมีค่าการเปลี่ยนแปลงเอนทาลปีมาตรฐาน (ΔH°) เท่ากับ -85 kJ/mol (ปฏิกิริยาคายความร้อน) หากเพิ่มอุณหภูมิของระบบให้สูงขึ้น ค่าคงที่สมดุลเคมี (Equilibrium constant, K) จะเปลี่ยนแปลงอย่างไรตามสมการของ Van't Hoff?",
+                choices: [
+                    "ก. ค่า K มีค่าเพิ่มขึ้น และสมดุลเลื่อนไปข้างหน้า",
+                    "ข. ค่า K มีค่าลดลง และสมดุลเลื่อนย้อนกลับ",
+                    "ค. ค่า K คงที่ แต่ความเร็วในการเข้าสู่สมดุลเพิ่มขึ้น",
+                    "ง. ค่า K เปลี่ยนแปลงตามความดันเท่านั้น ไม่ขึ้นกับอุณหภูมิ"
+                ],
+                correctIndex: 1,
+                explanation: `
+                    <p><strong>หลักการ:</strong> สมการของ Van't Hoff: <code>d(ln K) / dT = ΔH° / (R T²)</code></p>
+                    <p>เมื่อปฏิกิริยาเป็นแบบคายความร้อน (<code>ΔH° < 0</code>) พจน์ขวามือจะมีค่าติดลบ เมื่ออุณหภูมิ (T) เพิ่มขึ้น ค่า <code>K</code> จะ<strong>ลดลง</strong>ตามหลักของ Le Chatelier</p>
+                `
+            },
+
+            // ---------------- 2. TRANSPORT PHENOMENA & UNIT OPERATIONS (5 Questions) ----------------
+            {
+                id: "COE-CHE-UO-201",
+                category: "UNITOPS",
+                question: "ของเหลวชนิดหนึ่งมีความหนาแน่น (ρ) 900 kg/m³ และความหนืดไดนามิก (μ) 0.045 Pa·s ไหลภายในท่อกลมที่มีเส้นผ่านศูนย์กลางภายใน (D) 0.05 m ด้วยความเร็วเฉลี่ย (v) 1.0 m/s จงคำนวณค่า Reynolds Number (Re) และระบุลักษณะการไหล",
+                choices: [
+                    "ก. Re = 1,000 (การไหลแบบราบเรียบ Laminar flow)",
+                    "ข. Re = 2,000 (การไหลแบบราบเรียบ Laminar flow)",
+                    "ค. Re = 4,500 (การไหลแบบปั่นป่วน Turbulent flow)",
+                    "ง. Re = 10,000 (การไหลแบบปั่นป่วน Turbulent flow)"
+                ],
+                correctIndex: 0,
+                explanation: `
+                    <p><strong>หลักการ:</strong> คำนวณค่า Reynolds Number สำหรับการไหลในท่อกลม: <code>Re = (ρ v D) / μ</code></p>
+                    <p>แทนค่า: <code>Re = (900 × 1.0 × 0.05) / 0.045 = 45 / 0.045 = 1,000</code></p>
+                    <p>เนื่องจาก <code>Re < 2,100</code> การไหลจึงเป็นแบบราบเรียบ (Laminar flow)</p>
+                `
+            },
+            {
+                id: "COE-CHE-UO-202",
+                category: "UNITOPS",
+                question: "เครื่องแลกเปลี่ยนความร้อนแบบไหลสวนทางกัน (Counter-current Heat Exchanger) ใช้ของไหลร้อนเข้าที่ 120 °C ออกที่ 80 °C เพื่ออุ่นของไหลเย็นเข้าที่ 30 °C ออกที่ 70 °C จงหาค่าผลต่างอุณหภูมิเฉลี่ยแบบลอการิทึม (ΔT_lm)",
+                choices: [
+                    "ก. 40.0 °C",
+                    "ข. 45.0 °C",
+                    "ค. 50.0 °C",
+                    "ง. 55.0 °C"
+                ],
+                correctIndex: 2,
+                explanation: `
+                    <p><strong>หลักการ:</strong> สำหรับการไหลสวนทาง: <code>ΔT₁ = 120 - 70 = 50 °C</code> และ <code>ΔT₂ = 80 - 30 = 50 °C</code></p>
+                    <p>เนื่องจาก <code>ΔT₁ = ΔT₂ = 50 °C</code> จะได้ <code>ΔT_lm = 50.0 °C</code> ทันที</p>
+                `
+            },
+            {
+                id: "COE-CHE-UO-203",
+                category: "UNITOPS",
+                question: "หอกลั่นแยกสารผสมตามวิธีของ McCabe-Thiele กำหนดให้ x_D = 0.90 และอัตราส่วนการป้อนกลับ (Reflux ratio, R) เท่ากับ 2.0 จงหาสมการเส้นปฏิบัติการส่วนบนของหอ (Rectifying Section Operating Line)",
+                choices: [
+                    "ก. y = 0.50 x + 0.45",
+                    "ข. y = 0.67 x + 0.30",
+                    "ค. y = 0.75 x + 0.225",
+                    "ง. y = 2.00 x + 0.30"
+                ],
+                correctIndex: 1,
+                explanation: `
+                    <p><strong>หลักการ:</strong> สมการเส้นปฏิบัติการส่วนบน: <code>y = [R / (R + 1)] x + [x_D / (R + 1)]</code></p>
+                    <p>1) ความชัน: <code>2 / (2 + 1) = 2/3 ≈ 0.67</code></p>
+                    <p>2) จุดตัดแกน y: <code>0.90 / 3 = 0.30</code> ดังนั้น <code>y = 0.67 x + 0.30</code></p>
+                `
+            },
+            {
+                id: "COE-CHE-UO-204",
+                category: "UNITOPS",
+                question: "ในการออกแบบระบบปั๊ม เพื่อป้องกันไม่ให้เกิดโพรงอากาศ (Cavitation) ภายในปั๊ม วิศวกรต้องออกแบบให้ค่า NPSH เป็นไปตามเงื่อนไขใด?",
+                choices: [
+                    "ก. NPSH_A (Available) ต้องมากกว่า NPSH_R (Required)",
+                    "ข. NPSH_A (Available) ต้องน้อยกว่า NPSH_R (Required)",
+                    "ค. ความดันที่ทางดูดของปั๊มต้องต่ำกว่าความดันไอของของเหลว",
+                    "ง. ติดตั้งปั๊มให้อยู่สูงกว่าระดับผิวของเหลวในถังดูดให้มากที่สุด"
+                ],
+                correctIndex: 0,
+                explanation: `
+                    <p><strong>หลักการ:</strong> การป้องกัน Cavitation ต้องออกแบบให้ระบบท่อมีค่า <strong>NPSH_A > NPSH_R</strong> เสมอ เพื่อไม่ให้ของเหลวเดือดกลายเป็นไอที่ใบพัดปั๊ม</p>
+                `
+            },
+            {
+                id: "COE-CHE-UO-205",
+                category: "UNITOPS",
+                question: "ตัวเลขไร้มิติ (Dimensionless number) ข้อใดที่มีความหมายทางกายภาพเทียบเท่ากัน (Analogy) ระหว่างการถ่ายโอนความร้อนและการถ่ายโอนมวล ตามลำดับ?",
+                choices: [
+                    "ก. Nusselt number (Nu) คู่กับ Reynolds number (Re)",
+                    "ข. Prandtl number (Pr) คู่กับ Schmidt number (Sc)",
+                    "ค. Biot number (Bi) คู่กับ Peclet number (Pe)",
+                    "ง. Grashof number (Gr) คู่กับ Weber number (We)"
+                ],
+                correctIndex: 1,
+                explanation: `
+                    <p><strong>หลักการ:</strong> Prandtl number (Pr = ν/α) คืออัตราส่วนการแพร่โมเมนตัมต่อความร้อน เทียบเท่ากับ Schmidt number (Sc = ν/D_AB) ซึ่งคืออัตราส่วนการแพร่โมเมนตัมต่อมวล</p>
+                `
+            },
+
+            // ---------------- 3. KINETICS & REACTOR DESIGN (5 Questions) ----------------
+            {
+                id: "COE-CHE-KR-301",
+                category: "KINETICS",
+                question: "ปฏิกิริยา A → B เป็นปฏิกิริยาอันดับหนึ่ง (-r_A = k C_A) โดย k = 0.25 min⁻¹ นำไปทำในเครื่องปฏิกรณ์ CSTR ที่มีเวลาพำนัก (τ) 12 นาที จงคำนวณหาสัดส่วนการเปลี่ยนของสาร A (X_A)",
+                choices: [
+                    "ก. 0.50 (50%)",
+                    "ข. 0.67 (67%)",
+                    "ค. 0.75 (75%)",
+                    "ง. 0.95 (95%)"
+                ],
+                correctIndex: 2,
+                explanation: `
+                    <p><strong>หลักการ:</strong> สมการ CSTR สำหรับปฏิกิริยาอันดับ 1: <code>X_A = kτ / (1 + kτ)</code></p>
+                    <p>คำนวณ: <code>kτ = (0.25)(12) = 3.0</code> ดังนั้น <code>X_A = 3.0 / (1 + 3.0) = 0.75 (75%)</code></p>
+                `
+            },
+            {
+                id: "COE-CHE-KR-302",
+                category: "KINETICS",
+                question: "จากโจทย์ปฏิกิริยาอันดับหนึ่ง หากต้องการ X_A = 90% ข้อใดเปรียบเทียบปริมาตรเครื่องปฏิกรณ์ PFR และ CSTR ได้ถูกต้อง?",
+                choices: [
+                    "ก. ปริมาตรของ PFR มีขนาดเล็กกว่า CSTR เนื่องจากความเข้มข้นของสารตั้งต้นใน PFR ค่อยๆ ลดลงตามความยาวท่อ",
+                    "ข. ปริมาตรของ CSTR มีขนาดเล็กกว่า PFR เนื่องจากมีการกวนผสมอย่างสมบูรณ์",
+                    "ค. ปริมาตรของ PFR และ CSTR มีขนาดเท่ากันเสมอสำหรับปฏิกิริยาอันดับหนึ่ง",
+                    "ง. ไม่สามารถเปรียบเทียบได้หากไม่ทราบค่าพลังงานก่อกัมมันต์"
+                ],
+                correctIndex: 0,
+                explanation: `
+                    <p><strong>หลักการ:</strong> สำหรับ n > 0 ความเข้มข้นใน PFR จะสูงกว่าใน CSTR (ซึ่งตกลงสู่ค่าต่ำสุดทันที) ทำให้อัตราการเกิดปฏิกิริยาใน PFR สูงกว่า ส่งผลให้ <strong>V_PFR เล็กกว่า V_CSTR</strong></p>
+                `
+            },
+            {
+                id: "COE-CHE-KR-303",
+                category: "KINETICS",
+                question: "ปฏิกิริยาแบบขนาน: A → D (ต้องการ, r_D = k₁ C_A²) และ A → U (ไม่ต้องการ, r_U = k₂ C_A) หากต้องการเพิ่มการเลือกจำเพาะ (Selectivity, r_D/r_U) ควรเลือกใช้เครื่องปฏิกรณ์ชนิดใด?",
+                choices: [
+                    "ก. CSTR ขนาดใหญ่ เพื่อรักษาระดับ C_A ให้ต่ำที่สุด",
+                    "ข. PFR หรือ Batch reactor เพื่อรักษาระดับ C_A ช่วงต้นให้สูงที่สุด",
+                    "ค. เจือจางสารตั้งต้น A ด้วยตัวทำละลายเฉื่อยจำนวนมาก",
+                    "ง. ชนิดของเครื่องปฏิกรณ์ไม่มีผลต่อค่า Selectivity"
+                ],
+                correctIndex: 1,
+                explanation: `
+                    <p><strong>หลักการ:</strong> <code>S_D/U = (k₁ C_A²) / (k₂ C_A) = (k₁/k₂) C_A</code> ดังนั้นเพื่อให้ Selectivity สูงสุด ต้องรักษาระดับ C_A ให้<strong>สูงที่สุด</strong> จึงต้องเลือกใช้ <strong>PFR หรือ Batch</strong></p>
+                `
+            },
+            {
+                id: "COE-CHE-KR-304",
+                category: "KINETICS",
+                question: "ปฏิกิริยาอันดับศูนย์ (-r_A = k) ใน Batch reactor มี C_A0 = 4.0 mol/L และ k = 0.5 mol/(L·min) จงหาเวลาครึ่งชีวิต (t_1/2)",
+                choices: [
+                    "ก. 1.39 นาที",
+                    "ข. 2.00 นาที",
+                    "ค. 4.00 นาที",
+                    "ง. 8.00 นาที"
+                ],
+                correctIndex: 2,
+                explanation: `
+                    <p><strong>หลักการ:</strong> สำหรับปฏิกิริยาอันดับศูนย์: <code>t_1/2 = C_A0 / (2 k) = 4.0 / (2 × 0.5) = 4.00 นาที</code></p>
+                `
+            },
+            {
+                id: "COE-CHE-KR-305",
+                category: "KINETICS",
+                question: "ตามสมการของอาร์เรเนียส หากปฏิกิริยาที่ 1 มี E_a1 = 120 kJ/mol และปฏิกิริยาที่ 2 มี E_a2 = 60 kJ/mol ข้อใดกล่าวถูกต้องเมื่อเพิ่มอุณหภูมิ?",
+                choices: [
+                    "ก. ค่า k ของปฏิกิริยาที่ 1 จะเพิ่มขึ้นในสัดส่วนที่ไวกกว่าปฏิกิริยาที่ 2",
+                    "ข. ค่า k ของปฏิกิริยาที่ 2 จะเพิ่มขึ้นในสัดส่วนที่ไวกกว่าปฏิกิริยาที่ 1",
+                    "ค. ค่า k ของทั้งสองปฏิกิริยาจะเพิ่มขึ้นในสัดส่วนที่เท่ากัน",
+                    "ง. ค่าพลังงานก่อกัมมันต์ E_a จะลดลงเมื่ออุณหภูมิสูงขึ้น"
+                ],
+                correctIndex: 0,
+                explanation: `
+                    <p><strong>หลักการ:</strong> ปฏิกิริยาที่มีค่าพลังงานก่อกัมมันต์ (E_a) สูงกว่า จะมีความไวต่อการเปลี่ยนแปลงอุณหภูมิมากกว่า ค่า k จึงเพิ่มขึ้นเร็วกว่า</p>
+                `
+            },
+
+            // ---------------- 4. PROCESS CONTROL, SAFETY & PLANT DESIGN (5 Questions) ----------------
+            {
+                id: "COE-CHE-PC-401",
+                category: "CONTROL",
+                question: "กระบวนการอันดับหนึ่ง G(s) = 5 / (10s + 1) หากมีการเปลี่ยนแปลงสัญญาณขาเข้าแบบขั้นบันไดขนาด 2 หน่วย จงหาค่าการเปลี่ยนแปลงที่สภาวะคงตัวใหม่ (ΔY_∞) และค่าคงที่เวลา (τ)",
+                choices: [
+                    "ก. ΔY_∞ = 5 หน่วย และ τ = 10 นาที",
+                    "ข. ΔY_∞ = 10 หน่วย และ τ = 10 นาที",
+                    "ค. ΔY_∞ = 10 หน่วย และ τ = 5 นาที",
+                    "ง. ΔY_∞ = 20 หน่วย และ τ = 0.1 นาที"
+                ],
+                correctIndex: 1,
+                explanation: `
+                    <p><strong>หลักการ:</strong> จาก <code>G(s) = K_p / (τs + 1)</code> ได้ <code>K_p = 5</code> และ <code>τ = 10</code></p>
+                    <p>เมื่อ Step input ขนาด M = 2: <code>ΔY_∞ = K_p × M = 5 × 2 = 10 หน่วย</code></p>
+                `
+            },
+            {
+                id: "COE-CHE-PC-402",
+                category: "CONTROL",
+                question: "ในเครื่องปฏิกรณ์คายความร้อนรุนแรง เพื่อความปลอดภัยสูงสุดในกรณีที่ระบบลมเครื่องมือวัดขัดข้อง (Instrument air failure) ควรเลือกใช้วาล์วน้ำหล่อเย็นชนิดใด?",
+                choices: [
+                    "ก. Air-to-Open (Fail-Closed: FC) เพื่อประหยัดน้ำหล่อเย็น",
+                    "ข. Air-to-Close (Fail-Open: FO) เพื่อให้น้ำหล่อเย็นเปิดสุดเมื่อสูญเสียลม",
+                    "ค. วาล์วที่ล็อกตำแหน่งเดิมเสมอเมื่อลมหมด (Fail-Last)",
+                    "ง. ชนิดใดก็ได้เพราะตัวควบคุม PID จะชดเชยสัญญาณเอง"
+                ],
+                correctIndex: 1,
+                explanation: `
+                    <p><strong>หลักการ Fail-Safe:</strong> เมื่อระบบจ่ายลมขัดข้อง วาล์วน้ำหล่อเย็นต้องเปิดออกสุดอัตโนมัติเพื่อป้องกัน Thermal runaway เรียกว่า <strong>Fail-Open (FO)</strong></p>
+                `
+            },
+            {
+                id: "COE-CHE-PC-403",
+                category: "CONTROL",
+                question: "ในการควบคุมด้วย PID Controller หน้าที่สำคัญที่สุดของเทอม Integral (I-action) คืออะไร?",
+                choices: [
+                    "ก. ช่วยกำจัดค่าความคลาดเคลื่อนที่สภาวะคงตัว (Steady-state Offset) ให้เป็นศูนย์",
+                    "ข. ช่วยลดการแกว่งของสัญญาณและทำนายแนวโน้มล่วงหน้า",
+                    "ค. ช่วยตัดสัญญาณรบกวนความถี่สูงจากหัววัด",
+                    "ง. ทำให้ระบบไม่ต้องใช้การวัดสัญญาณป้อนกลับ (Feedback)"
+                ],
+                correctIndex: 0,
+                explanation: `
+                    <p><strong>หลักการ:</strong> เทอม I (Integral) จะสะสม Error ตามเวลาเพื่อกำจัด <strong>Steady-state Offset</strong> จนเป็นศูนย์</p>
+                `
+            },
+            {
+                id: "COE-CHE-PC-404",
+                category: "CONTROL",
+                question: "ในการศึกษา HAZOP คำสำคัญ (Guide word) ใดที่จับคู่กับตัวแปรกระบวนการ 'อัตราการไหล (Flow)' แล้วหมายถึง 'การไหลย้อนกลับ (Reverse flow)'?",
+                choices: [
+                    "ก. NO / NOT",
+                    "ข. MORE",
+                    "ค. AS WELL AS",
+                    "ง. OTHER THAN"
+                ],
+                correctIndex: 3,
+                    explanation: `
+                    <p><strong>หลักการ HAZOP:</strong> การไหลย้อนกลับ (Reverse flow) จัดอยู่ในกลุ่ม Guide word คือ <strong>OTHER THAN</strong> (หรือ Reverse)</p>
+                `
+            },
+            {
+                id: "COE-CHE-PC-405",
+                category: "CONTROL",
+                question: "ไอของสารไวไฟมีค่า LEL = 2.0% ในอากาศ มาตรฐานความปลอดภัยกำหนดให้การทำงานในพื้นที่อับอากาศต้องมีความเข้มข้นไม่เกินร้อยละเท่าใดของค่า LEL (10% LEL)?",
+                choices: [
+                    "ก. ไม่เกิน 0.2% โดยปริมาตรในอากาศ",
+                    "ข. ไม่เกิน 1.0% โดยปริมาตรในอากาศ",
+                    "ค. ไม่เกิน 2.0% โดยปริมาตรในอากาศ",
+                    "ง. ต้องอยู่ระหว่าง 2.0% ถึง 10.0%"
+                ],
+                correctIndex: 0,
+                explanation: `
+                    <p><strong>หลักการความปลอดภัย:</strong> กำหนดให้ควบคุมไม่เกิน 10% ของ LEL: <code>0.10 × 2.0% = 0.2% โดยปริมาตรในอากาศ</code></p>
+                `
+            }
+        ];
+
+        // ==================== STATE MANAGEMENT ====================
+        let currentMode = 'exam';
+        let selectedCategory = 'ALL';
+        let activeQuestions = [];
+        let currentIndex = 0;
+        let userAnswers = [];
+        let flaggedQuestions = [];
+        let practiceRevealed = [];
+
+        let timerInterval = null;
+        let totalTimeSeconds = 3600;
+        let remainingSeconds = 3600;
+        let currentReviewFilter = 'ALL';
+
+        document.getElementById('totalBankCount').textContent = QUESTION_BANK.length;
+
+        function selectMode(mode) {
+            currentMode = mode;
+            const examCard = document.getElementById('modeCard_exam');
+            const pracCard = document.getElementById('modeCard_practice');
+
+            if (mode === 'exam') {
+                examCard.className = "block cursor-pointer rounded-xl border-2 border-blue-600 bg-blue-50/40 p-4 transition-all";
+                pracCard.className = "block cursor-pointer rounded-xl border-2 border-slate-200 hover:border-slate-300 p-4 transition-all";
+                examCard.querySelector('input').checked = true;
+            } else {
+                pracCard.className = "block cursor-pointer rounded-xl border-2 border-emerald-600 bg-emerald-50/40 p-4 transition-all";
+                examCard.className = "block cursor-pointer rounded-xl border-2 border-slate-200 hover:border-slate-300 p-4 transition-all";
+                pracCard.querySelector('input').checked = true;
+            }
+        }
+
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            const cats = ['ALL', 'THERMO', 'UNITOPS', 'KINETICS', 'CONTROL'];
+            cats.forEach(c => {
+                const card = document.getElementById('catCard_' + c);
+                const icon = document.getElementById('catIcon_' + c);
+                if (c === cat) {
+                    card.classList.remove('border-slate-200', 'hover:border-slate-300');
+                    card.classList.add('border-blue-600', 'bg-blue-50/40');
+                    icon.className = "fa-solid fa-circle-check text-blue-600 " + (c === 'ALL' ? 'text-xl' : 'text-lg');
+                } else {
+                    card.classList.remove('border-blue-600', 'bg-blue-50/40');
+                    card.classList.add('border-slate-200', 'hover:border-slate-300');
+                    icon.className = "fa-regular fa-circle text-slate-400 " + (c === 'ALL' ? 'text-xl' : 'text-lg');
+                }
+            });
+
+            const count = cat === 'ALL' ? QUESTION_BANK.length : QUESTION_BANK.filter(q => q.category === cat).length;
+            const labelMap = {
+                ALL: `เลือก: รวมทุกวิชา (${count} ข้อ)`,
+                THERMO: `เลือก: Thermodynamics (${count} ข้อ)`,
+                UNITOPS: `เลือก: Transport & Unit Ops (${count} ข้อ)`,
+                KINETICS: `เลือก: Kinetics & Reactors (${count} ข้อ)`,
+                CONTROL: `เลือก: Control & Safety (${count} ข้อ)`
+            };
+            document.getElementById('selectedSubjectCountBadge').textContent = labelMap[cat];
+        }
+
+        function startExam() {
+            let pool = selectedCategory === 'ALL'
+                ? [...QUESTION_BANK]
+                : QUESTION_BANK.filter(q => q.category === selectedCategory);
+
+            const shouldShuffle = document.getElementById('shuffleToggle').checked;
+            if (shouldShuffle) {
+                pool.sort(() => Math.random() - 0.5);
+            }
+
+            activeQuestions = pool;
+            currentIndex = 0;
+            userAnswers = new Array(activeQuestions.length).fill(null);
+            flaggedQuestions = new Array(activeQuestions.length).fill(false);
+            practiceRevealed = new Array(activeQuestions.length).fill(false);
+
+            totalTimeSeconds = activeQuestions.length * 180;
+            remainingSeconds = totalTimeSeconds;
+
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('resultView').classList.add('hidden');
+            document.getElementById('examView').classList.remove('hidden');
+
+            const headerInfo = document.getElementById('examHeaderInfo');
+            headerInfo.classList.remove('hidden');
+            headerInfo.classList.add('flex');
+
+            const modeBadge = document.getElementById('headerModeBadge');
+            if (currentMode === 'exam') {
+                modeBadge.textContent = "โหมดจำลองสอบจริง (CBT)";
+                modeBadge.className = "text-xs text-amber-400 font-medium";
+                document.getElementById('practiceCheckBtnWrap').classList.add('hidden');
+            } else {
+                modeBadge.textContent = "โหมดฝึกทำข้อสอบ (ดูเฉลยทันที)";
+                modeBadge.className = "text-xs text-emerald-400 font-medium";
+                document.getElementById('practiceCheckBtnWrap').classList.remove('hidden');
+            }
+
+            startTimer();
+            renderQuestion();
+            renderPalette();
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                if (currentMode === 'exam') {
+                    remainingSeconds--;
+                    if (remainingSeconds <= 0) {
+                        remainingSeconds = 0;
+                        clearInterval(timerInterval);
+                        submitExam();
+                        return;
+                    }
+                } else {
+                    if (remainingSeconds > 0) remainingSeconds--;
+                }
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(remainingSeconds / 60);
+            const secs = remainingSeconds % 60;
+            const display = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            const el = document.getElementById('timerDisplay');
+            el.textContent = display;
+
+            if (remainingSeconds < 300 && currentMode === 'exam') {
+                el.classList.add('text-rose-400');
+            } else {
+                el.classList.remove('text-rose-400');
+            }
+        }
+
+        function renderQuestion() {
+            const q = activeQuestions[currentIndex];
+            document.getElementById('qNumberBadge').textContent = `ข้อที่ ${currentIndex + 1} / ${activeQuestions.length}`;
+            document.getElementById('qSubjectBadge').textContent = SUBJECT_NAMES[q.category];
+            document.getElementById('qCodeText').textContent = `รหัสอ้างอิงข้อสอบ: ${q.id}`;
+            document.getElementById('questionText').innerHTML = q.question.replace(/\n/g, '<br>');
+
+            const flagBtn = document.getElementById('flagBtn');
+            const flagIcon = document.getElementById('flagIcon');
+            const flagText = document.getElementById('flagText');
+            if (flaggedQuestions[currentIndex]) {
+                flagBtn.className = "px-3 py-1.5 rounded-lg border border-amber-400 bg-amber-50 text-amber-800 text-xs font-bold flex items-center space-x-1.5 transition";
+                flagIcon.className = "fa-solid fa-flag text-amber-500";
+                flagText.textContent = "ติดธงแล้ว";
+            } else {
+                flagBtn.className = "px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 text-slate-600 text-xs font-semibold flex items-center space-x-1.5 transition";
+                flagIcon.className = "fa-regular fa-flag";
+                flagText.textContent = "ติดธงทบทวน";
+            }
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+
+            const isRevealed = currentMode === 'practice' && practiceRevealed[currentIndex];
+
+            q.choices.forEach((choiceText, idx) => {
+                const isSelected = userAnswers[currentIndex] === idx;
+                let btnClass = "w-full text-left p-4 rounded-xl border-2 transition-all flex items-start justify-between gap-3 ";
+                let badgeIcon = `<span class="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0 mt-0.5">${idx + 1}</span>`;
+
+                if (isRevealed) {
+                    if (idx === q.correctIndex) {
+                        btnClass += "border-emerald-500 bg-emerald-50/70 text-emerald-950 font-semibold";
+                        badgeIcon = `<span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs shrink-0 mt-0.5"><i class="fa-solid fa-check"></i></span>`;
+                    } else if (isSelected && idx !== q.correctIndex) {
+                        btnClass += "border-rose-400 bg-rose-50/70 text-rose-950";
+                        badgeIcon = `<span class="w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs shrink-0 mt-0.5"><i class="fa-solid fa-xmark"></i></span>`;
+                    } else {
+                        btnClass += "border-slate-200 bg-slate-50/50 text-slate-500 opacity-75";
+                    }
+                } else {
+                    if (isSelected) {
+                        btnClass += "border-blue-600 bg-blue-50/60 text-blue-950 font-semibold shadow-xs";
+                        badgeIcon = `<span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs shrink-0 mt-0.5"><i class="fa-solid fa-check"></i></span>`;
+                    } else {
+                        btnClass += "border-slate-200 hover:border-blue-300 hover:bg-slate-50 text-slate-800";
+                    }
+                }
+
+                const btn = document.createElement('button');
+                btn.className = btnClass;
+                btn.onclick = () => selectChoice(idx);
+                btn.innerHTML = `<span class="text-sm md:text-base leading-relaxed">${choiceText}</span>${badgeIcon}`;
+                choicesContainer.appendChild(btn);
+            });
+
+            const solBox = document.getElementById('instantSolutionBox');
+            if (isRevealed) {
+                solBox.classList.remove('hidden');
+                const banner = document.getElementById('instantFeedbackBanner');
+                const userAns = userAnswers[currentIndex];
+                if (userAns === q.correctIndex) {
+                    banner.className = "p-3.5 rounded-xl mb-4 bg-emerald-100 border border-emerald-300 text-emerald-900 text-sm font-bold flex items-center gap-2";
+                    banner.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i> <span>ถูกต้อง! คุณเลือกคำตอบที่ถูกต้อง</span>`;
+                } else {
+                    banner.className = "p-3.5 rounded-xl mb-4 bg-rose-100 border border-rose-300 text-rose-900 text-sm font-bold flex items-center gap-2";
+                    banner.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 text-lg"></i> <span>คำตอบที่ถูกต้องคือ: ${q.choices[q.correctIndex]}</span>`;
+                }
+                document.getElementById('instantExplanationText').innerHTML = q.explanation;
+            } else {
+                solBox.classList.add('hidden');
+            }
+
+            document.getElementById('prevBtn').disabled = (currentIndex === 0);
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentIndex === activeQuestions.length - 1) {
+                nextBtn.innerHTML = `<span>ตรวจทาน / ส่งข้อสอบ</span> <i class="fa-solid fa-flag-checkered"></i>`;
+                nextBtn.className = "px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm flex items-center space-x-2 shadow-sm transition";
+            } else {
+                nextBtn.innerHTML = `<span>ข้อถัดไป</span> <i class="fa-solid fa-chevron-right"></i>`;
+                nextBtn.className = "px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center space-x-2 shadow-sm transition";
+            }
+        }
+
+        function selectChoice(choiceIdx) {
+            userAnswers[currentIndex] = choiceIdx;
+            if (currentMode === 'practice') {
+                practiceRevealed[currentIndex] = true;
+            }
+            renderQuestion();
+            renderPalette();
+        }
+
+        function revealPracticeAnswer() {
+            practiceRevealed[currentIndex] = true;
+            renderQuestion();
+        }
+
+        function toggleFlagCurrent() {
+            flaggedQuestions[currentIndex] = !flaggedQuestions[currentIndex];
+            renderQuestion();
+            renderPalette();
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+                renderPalette();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < activeQuestions.length - 1) {
+                currentIndex++;
+                renderQuestion();
+                renderPalette();
+            } else {
+                openSubmitConfirmation();
+            }
+        }
+
+        function jumpToQuestion(idx) {
+            currentIndex = idx;
+            renderQuestion();
+            renderPalette();
+        }
+
+        function renderPalette() {
+            const grid = document.getElementById('paletteGrid');
+            grid.innerHTML = '';
+
+            let answeredCount = 0;
+            let flaggedCount = 0;
+
+            activeQuestions.forEach((_, idx) => {
+                const isAnswered = userAnswers[idx] !== null;
+                const isFlagged = flaggedQuestions[idx];
+                const isCurrent = idx === currentIndex;
+
+                if (isAnswered) answeredCount++;
+                if (isFlagged) flaggedCount++;
+
+                let btnClass = "question-grid-btn h-10 rounded-xl font-bold text-xs flex items-center justify-center relative ";
+                if (isFlagged) {
+                    btnClass += "bg-amber-400 text-slate-900 border border-amber-500 ";
+                } else if (isAnswered) {
+                    btnClass += "bg-blue-600 text-white ";
+                } else {
+                    btnClass += "bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 ";
+                }
+                if (isCurrent) {
+                    btnClass += "ring-2 ring-offset-2 ring-blue-700 font-extrabold ";
+                }
+
+                const btn = document.createElement('button');
+                btn.className = btnClass;
+                btn.onclick = () => jumpToQuestion(idx);
+                btn.innerHTML = `<span>${idx + 1}</span>${isFlagged ? '<i class="fa-solid fa-flag text-[9px] absolute top-1 right-1 text-slate-900"></i>' : ''}`;
+                grid.appendChild(btn);
+            });
+
+            const total = activeQuestions.length;
+            document.getElementById('answeredCounterText').textContent = `ตอบแล้ว ${answeredCount}/${total}`;
+            document.getElementById('legendAnswered').textContent = answeredCount;
+            document.getElementById('legendUnanswered').textContent = total - answeredCount;
+            document.getElementById('legendFlagged').textContent = flaggedCount;
+        }
+
+        function openSubmitConfirmation() {
+            const total = activeQuestions.length;
+            const answered = userAnswers.filter(a => a !== null).length;
+            const flagged = flaggedQuestions.filter(Boolean).length;
+
+            document.getElementById('modalTotalQ').textContent = `${total} ข้อ`;
+            document.getElementById('modalAnsweredQ').textContent = `${answered} ข้อ`;
+            document.getElementById('modalUnansweredQ').textContent = `${total - answered} ข้อ`;
+            document.getElementById('modalFlaggedQ').textContent = `${flagged} ข้อ`;
+
+            const modal = document.getElementById('submitModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeSubmitConfirmation() {
+            const modal = document.getElementById('submitModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function submitExam() {
+            closeSubmitConfirmation();
+            if (timerInterval) clearInterval(timerInterval);
+
+            document.getElementById('examView').classList.add('hidden');
+            document.getElementById('examHeaderInfo').classList.add('hidden');
+            document.getElementById('resultView').classList.remove('hidden');
+
+            const total = activeQuestions.length;
+            let correct = 0;
+
+            const catStats = {
+                THERMO: { correct: 0, total: 0, label: "1. Thermodynamics" },
+                UNITOPS: { correct: 0, total: 0, label: "2. Transport & Unit Operations" },
+                KINETICS: { correct: 0, total: 0, label: "3. Kinetics & Reactor Design" },
+                CONTROL: { correct: 0, total: 0, label: "4. Process Control & Safety" }
+            };
+
+            activeQuestions.forEach((q, idx) => {
+                catStats[q.category].total++;
+                if (userAnswers[idx] === q.correctIndex) {
+                    correct++;
+                    catStats[q.category].correct++;
+                }
+            });
+
+            const percent = Math.round((correct / total) * 100);
+            const passed = percent >= 60;
+            const spentSecs = Math.max(1, totalTimeSeconds - remainingSeconds);
+            const sMins = Math.floor(spentSecs / 60);
+            const sRem = spentSecs % 60;
+
+            document.getElementById('scoreFractionText').textContent = `${correct} / ${total}`;
+            document.getElementById('scorePercentText').textContent = `${percent}%`;
+            document.getElementById('timeSpentText').textContent = `${String(sMins).padStart(2, '0')}:${String(sRem).padStart(2, '0')} นาที`;
+
+            const badge = document.getElementById('passFailBadge');
+            if (passed) {
+                badge.className = "inline-flex items-center space-x-2 px-4 py-1.5 rounded-full text-sm font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+                badge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> <span>ผ่านเกณฑ์การทดสอบ (PASS ≥ 60%)</span>`;
+            } else {
+                badge.className = "inline-flex items-center space-x-2 px-4 py-1.5 rounded-full text-sm font-bold bg-rose-100 text-rose-800 border border-rose-300";
+                badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> <span>ยังไม่ผ่านเกณฑ์ 60% (ต้องได้ไม่น้อยกว่า ${Math.ceil(total * 0.6)} ข้อ)</span>`;
+            }
+
+            const breakdownEl = document.getElementById('subjectBreakdownList');
+            breakdownEl.innerHTML = '';
+            Object.keys(catStats).forEach(key => {
+                const st = catStats[key];
+                if (st.total === 0) return;
+                const p = Math.round((st.correct / st.total) * 100);
+                const barColor = p >= 60 ? 'bg-emerald-500' : 'bg-amber-500';
+                breakdownEl.innerHTML += `
+                    <div>
+                        <div class="flex justify-between font-semibold text-slate-700 mb-1">
+                            <span>${st.label}</span>
+                            <span>${st.correct}/${st.total} (${p}%)</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="${barColor} h-full rounded-full transition-all duration-500" style="width: ${p}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            filterReview('ALL');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function filterReview(filterType) {
+            currentReviewFilter = filterType;
+            ['ALL', 'WRONG', 'CORRECT'].forEach(f => {
+                const btn = document.getElementById('revFilter_' + f);
+                if (f === filterType) {
+                    btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-xs";
+                } else {
+                    btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200";
+                }
+            });
+
+            const container = document.getElementById('reviewSolutionsContainer');
+            container.innerHTML = '';
+
+            activeQuestions.forEach((q, idx) => {
+                const userAns = userAnswers[idx];
+                const isCorrect = userAns === q.correctIndex;
+
+                if (filterType === 'WRONG' && isCorrect) return;
+                if (filterType === 'CORRECT' && !isCorrect) return;
+
+                const statusBadge = isCorrect
+                    ? `<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1.5"><i class="fa-solid fa-check"></i> ตอบถูก (+1 คะแนน)</span>`
+                    : `<span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 flex items-center gap-1.5"><i class="fa-solid fa-xmark"></i> ${userAns === null ? 'ไม่ได้เลือกคำตอบ' : 'ตอบผิด'} (0 คะแนน)</span>`;
+
+                let choicesHtml = '';
+                q.choices.forEach((ch, cIdx) => {
+                    let rowStyle = "p-3 rounded-xl border text-sm flex items-center justify-between ";
+                    let tag = "";
+                    if (cIdx === q.correctIndex) {
+                        rowStyle += "border-emerald-500 bg-emerald-50/70 text-emerald-950 font-bold";
+                        tag = `<span class="text-xs font-bold text-emerald-700"><i class="fa-solid fa-circle-check"></i> เฉลยที่ถูกต้อง</span>`;
+                    } else if (cIdx === userAns && !isCorrect) {
+                        rowStyle += "border-rose-400 bg-rose-50/70 text-rose-950 font-medium";
+                        tag = `<span class="text-xs font-bold text-rose-700"><i class="fa-solid fa-circle-xmark"></i> คำตอบที่คุณเลือก</span>`;
+                    } else {
+                        rowStyle += "border-slate-200 bg-white text-slate-600";
+                    }
+                    choicesHtml += `<div class="${rowStyle}"><span>${ch}</span>${tag}</div>`;
+                });
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4";
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="px-3 py-1 rounded-lg bg-slate-900 text-white font-bold text-xs">ข้อที่ ${idx + 1}</span>
+                            <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md">${SUBJECT_NAMES[q.category]}</span>
+                            <span class="text-xs text-slate-400">(${q.id})</span>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    <div class="text-base font-medium text-slate-900 leading-relaxed">${q.question.replace(/\n/g, '<br>')}</div>
+                    <div class="grid sm:grid-cols-2 gap-2.5">${choicesHtml}</div>
+                    <div class="formula-box p-4 rounded-xl space-y-1.5 text-sm text-slate-800">
+                        <h4 class="font-bold text-blue-900 flex items-center gap-2">
+                            <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                            <span>วิธีทำและคำอธิบายละเอียด:</span>
+                        </h4>
+                        <div class="leading-relaxed font-sans space-y-1">${q.explanation}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (container.children.length === 0) {
+                container.innerHTML = `<div class="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-200">ไม่มีรายการข้อสอบในหมวดตัวกรองนี้</div>`;
+            }
+        }
+
+        function retryCurrentExam() {
+            startExam();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function confirmReturnHome() {
+            const examHidden = document.getElementById('examView').classList.contains('hidden');
+            if (!examHidden) {
+                const modal = document.getElementById('homeConfirmModal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                returnHome();
+            }
+        }
+
+        function closeHomeConfirmation() {
+            const modal = document.getElementById('homeConfirmModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function returnHome() {
+            closeHomeConfirmation();
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('examView').classList.add('hidden');
+            document.getElementById('resultView').classList.add('hidden');
+            document.getElementById('examHeaderInfo').classList.add('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleFormulaModal() {
+            const modal = document.getElementById('formulaModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function toggleCalculatorModal() {
+            const modal = document.getElementById('calculatorModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function calcInput(val) {
+            const disp = document.getElementById('calcDisplay');
+            if (val === 'C') {
+                disp.value = '0';
+                return;
+            }
+            if (disp.value === '0' && val !== '.') {
+                disp.value = val;
+            } else {
+                disp.value += val;
+            }
+        }
+
+        function calcFunc(fn) {
+            const disp = document.getElementById('calcDisplay');
+            try {
+                const v = parseFloat(disp.value);
+                if (fn === 'ln') {
+                    disp.value = Math.log(v).toFixed(4);
+                }
+            } catch (e) {
+                disp.value = 'Error';
+            }
+        }
+
+        function calcEvaluate() {
+            const disp = document.getElementById('calcDisplay');
+            try {
+                const sanitized = disp.value.replace(/[^0-9+\-*/.()]/g, '');
+                const res = Function('"use strict";return (' + sanitized + ')')();
+                disp.value = Number.isInteger(res) ? res : res.toFixed(4);
+            } catch (e) {
+                disp.value = 'Error';
+            }
+        }
+    </script>
+</body>
+</html>
